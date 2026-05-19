@@ -1,25 +1,36 @@
+const keys = document.querySelectorAll('.key');
+const status = document.querySelector('.status');
+
 function playSound(key) {
+    const audio = document.querySelector(`audio[data-key="${key}"]`);
+    const keyItem = document.querySelector(`li[data-key="${key}"]`);
 
-const audio = document.querySelector(`audio[data-key="${key}"]`);
-const keyItem = document.querySelector(`li[data-key="{key}"]`);
+    if (!audio || !keyItem) return;
 
-if (!audio) return;
+    audio.currentTime = 0;
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(() => {});
+    }
 
-audio.currentTime = 0;
-audio.play();
-
-keyItem.classList.add('playing');
-setTimeout(function() {
-    keyItem.classList.remove('playing');
-}, 100);
-
+    keyItem.classList.add('playing');
+    status.textContent = `Playing: ${keyItem.querySelector('.sound').textContent}`;
 }
 
-window.addEventListener('keydown', function(event) {
-    plsySound(event.key.toLowerCase());
+function removeTransition(event) {
+    if (event.propertyName !== 'transform') return;
+    this.classList.remove('playing');
+}
+
+keys.forEach((keyItem) => {
+    keyItem.addEventListener('transitionend', removeTransition);
 });
 
-document.querySelector('.keys').addEventListener('click',function(event) {
+window.addEventListener('keydown', function(event) {
+    playSound(event.key.toLowerCase());
+});
+
+document.querySelector('.keys').addEventListener('click', function(event) {
     const keyItem = event.target.closest('li[data-key]');
     if (!keyItem) return;
     playSound(keyItem.dataset.key);
